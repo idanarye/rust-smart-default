@@ -1,0 +1,11 @@
+[package]
+name = "smart-default"
+version = "0.1.0"
+authors = ["IdanArye <idanarye@gmail.com>"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "0.11.11"
+quote = "0.3.15"
