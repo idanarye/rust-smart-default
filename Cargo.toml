@@ -5,6 +5,7 @@ version = "0.1.0"
 authors = ["IdanArye <idanarye@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/idanarye/rust-smart-default"
+documentation = "https://idanarye.github.io/rust-smart-default/"
 
 [lib]
 proc-macro = true

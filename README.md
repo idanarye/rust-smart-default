@@ -1,4 +1,6 @@
 [![Build Status](https://api.travis-ci.org/idanarye/rust-smart-default.svg?branch=master)](https://travis-ci.org/idanarye/rust-smart-default)
+[![Latest Version](https://img.shields.io/crates/v/smart-default.svg)](https://crates.io/crates/smart-default)
+[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://idanarye.github.io/rust-smart-default/)
 
 # Rust SmartDefault
 
