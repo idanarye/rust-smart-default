@@ -1,5 +1,3 @@
-#![feature(macro_vis_matcher)]
-
 #[macro_use]
 extern crate smart_default;
 
