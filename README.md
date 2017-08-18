@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/idanarye/rust-smart-default.svg?branch=master)](https://travis-ci.org/idanarye/rust-smart-default)
+
 # Rust SmartDefault
 
 Custom derive for automatically implementing the `Default` trait with customized default values:
