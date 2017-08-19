@@ -9,8 +9,8 @@
 //! # Examples
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate smart_default;
+//! #[macro_use]
+//! extern crate smart_default;
 //!
 //! # fn main() {
 //! #[derive(SmartDefault)]
@@ -34,7 +34,7 @@
 //! ```
 //!
 //! * `Baz` has the `#[default]` attribute. This means that the default `Foo` is a `Foo::Baz`. Only
-//!   one variant may have `#[default]`, and it must have no value.
+//!   one variant may have a `#[default]` attribute, and that attribute must have no value.
 //! * `a` has a `#[default = "12"]` attribute. This means that it's default value is `12`.
 //!   Currently custom attributes can only be strings, so the default value must be encoded in a
 //!   string as well.

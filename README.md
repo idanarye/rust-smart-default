@@ -7,6 +7,9 @@
 Custom derive for automatically implementing the `Default` trait with customized default values:
 
 ```rust
+#[macro_use]
+extern crate smart_default;
+
 #[derive(SmartDefault)]
 enum Foo {
     Bar,
