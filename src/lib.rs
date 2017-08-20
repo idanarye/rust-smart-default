@@ -61,11 +61,13 @@ pub fn derive_smart_default(input: TokenStream) -> TokenStream {
 
 fn impl_my_derive(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
+
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     match ast.body {
         syn::Body::Struct(ref body) => {
             let body_assignment = default_body_tt(body);
             quote! {
-                impl Default for #name {
+                impl #impl_generics Default for #name #ty_generics #where_clause {
                     fn default() -> Self {
                         #name #body_assignment
                     }
@@ -89,7 +91,7 @@ fn impl_my_derive(ast: &syn::DeriveInput) -> quote::Tokens {
             let default_variant_name = &default_variant.ident;
             let body_assignment = default_body_tt(&default_variant.data);
             quote! {
-                impl Default for #name {
+                impl #impl_generics Default for #name #ty_generics #where_clause {
                     fn default() -> Self {
                         #name :: #default_variant_name #body_assignment
                     }

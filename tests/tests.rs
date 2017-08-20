@@ -95,7 +95,7 @@ fn test_enum_of_structs() {
 #[test]
 fn test_enum_mixed() {
     #[derive(PartialEq, SmartDefault)]
-    pub enum Foo {
+    enum Foo {
         #[allow(dead_code)]
         Bar,
         #[default]
@@ -107,4 +107,32 @@ fn test_enum_mixed() {
     }
 
     assert!(Foo::default() == Foo::Baz(10));
+}
+
+#[test]
+fn test_generics_type_parameters() {
+    #[derive(PartialEq, SmartDefault)]
+    struct Foo<T> where T: Default {
+        #[default = "Some(Default::default())"]
+        x: Option<T>
+    }
+
+    assert!(Foo::default() == Foo { x: Some(0) });
+}
+
+#[test]
+fn test_generics_lifetime_parameters() {
+    // NOTE: A default value makes no sense with lifetime parameters, since ::default() receives no
+    // paramters and therefore can receive no lifetimes. But it does make sense if you make a variant
+    // without ref fields the default.
+
+    #[derive(PartialEq, SmartDefault)]
+    enum Foo<'a> {
+        #[default]
+        Bar(i32),
+        #[allow(dead_code)]
+        Baz(&'a str)
+    }
+
+    assert!(Foo::default() == Foo::Bar(0));
 }
