@@ -6,6 +6,8 @@ authors = ["IdanArye <idanarye@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/idanarye/rust-smart-default"
 documentation = "https://idanarye.github.io/rust-smart-default/"
+readme = "README.md"
+keywords = ["default"]
 
 [lib]
 proc-macro = true
