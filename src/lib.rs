@@ -43,6 +43,8 @@
 //! * `c` is a string, and thus it's default value - a string - must be escaped inside that
 //!   attribute. You can't use `#[default = "hello"]` here - that will look for a constant named
 //!   `hello` and use it's value as `c`'s default.
+//! * Documentation for the `impl Default` section is generated automatically, specifying the
+//!   default value returned from `::default()`.
 
 extern crate proc_macro;
 extern crate syn;
@@ -61,18 +63,14 @@ pub fn derive_smart_default(input: TokenStream) -> TokenStream {
 
 fn impl_my_derive(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
-
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
-    match ast.body {
+
+    let (default_expr, doc) = match ast.body {
         syn::Body::Struct(ref body) => {
-            let body_assignment = default_body_tt(body);
-            quote! {
-                impl #impl_generics Default for #name #ty_generics #where_clause {
-                    fn default() -> Self {
-                        #name #body_assignment
-                    }
-                }
-            }
+            let (body_assignment, doc) = default_body_tt(body);
+            (quote! {
+                #name #body_assignment
+            }, format!("Return `{}{}`", name, doc))
         }
         syn::Body::Enum(ref variants) => {
             let default_variant = find_only(variants, |variant| {
@@ -89,13 +87,17 @@ fn impl_my_derive(ast: &syn::DeriveInput) -> quote::Tokens {
             });
             let default_variant = default_variant.expect("No default variant");
             let default_variant_name = &default_variant.ident;
-            let body_assignment = default_body_tt(&default_variant.data);
-            quote! {
-                impl #impl_generics Default for #name #ty_generics #where_clause {
-                    fn default() -> Self {
-                        #name :: #default_variant_name #body_assignment
-                    }
-                }
+            let (body_assignment, doc) = default_body_tt(&default_variant.data);
+            (quote! {
+                #name :: #default_variant_name #body_assignment
+            }, format!("Return `{}::{}{}`", name, default_variant_name, doc))
+        }
+    };
+    quote! {
+        impl #impl_generics Default for #name #ty_generics #where_clause {
+            #[doc = #doc]
+            fn default() -> Self {
+                #default_expr
             }
         }
     }
@@ -103,48 +105,74 @@ fn impl_my_derive(ast: &syn::DeriveInput) -> quote::Tokens {
 
 /// Return a token-tree for the default "body" - the part after the name that contains the values.
 /// That is, the `{ ... }` part for structs, the `(...)` part for tuples, and nothing for units.
-fn default_body_tt(body: &syn::VariantData) -> quote::Tokens {
-    match body {
+fn default_body_tt(body: &syn::VariantData) -> (quote::Tokens, String) {
+    let mut doc = String::new();
+    use std::fmt::Write;
+    let body_tt = match body {
         &syn::VariantData::Struct(ref fields) => {
-            let field_assignments = fields.iter().map(|field| {
-                let field_name = field.ident.as_ref();
-                let default = field_default_expr(field);
-                quote! { #field_name : #default }
-            });
-            quote!{
-                {
-                    #( #field_assignments ),*
+            doc.push_str(" {");
+            let result = {
+                let field_assignments = fields.iter().map(|field| {
+                    let field_name = field.ident.as_ref();
+                    let (default_value, default_doc) = field_default_expr_and_doc(field);
+                    write!(&mut doc, "\n    {}: {},", field_name.expect("field value in struct is empty"), default_doc).unwrap();
+                    quote! { #field_name : #default_value }
+                });
+                quote!{
+                    {
+                        #( #field_assignments ),*
+                    }
                 }
-            }
+            };
+            if (&mut doc).ends_with(",") {
+                doc.pop();
+                doc.push('\n');
+            };
+            doc.push('}');
+            result
         }
         &syn::VariantData::Tuple(ref fields) => {
-            let field_assignments = fields.iter().map(|field| field_default_expr(field));
-            quote! {
-                (
-                    #( #field_assignments ),*
-                )
-            }
+            doc.push('(');
+            let result = {
+                let field_assignments = fields.iter().map(|field| {
+                    let (default_value, default_doc) = field_default_expr_and_doc(field);
+                    write!(&mut doc, "{}, ", default_doc).unwrap();
+                    default_value
+                });
+                quote! {
+                    (
+                        #( #field_assignments ),*
+                    )
+                }
+            };
+            if (&mut doc).ends_with(", ") {
+                doc.pop();
+                doc.pop();
+            };
+            doc.push(')');
+            result
         }
         &syn::VariantData::Unit => quote!{},
-    }
+    };
+    (body_tt, doc)
 }
 
 /// Return a default expression for a field based on it's `#[default = "..."]` attribute. Panic
 /// if there is more than one, of if there is a `#[default]` attribute without value.
-fn field_default_expr(field: &syn::Field) -> quote::Tokens {
+fn field_default_expr_and_doc(field: &syn::Field) -> (quote::Tokens, &str) {
     if let Some(default_attr) = find_only(&field.attrs, |attr| attr.name() == "default") {
         if let syn::MetaItem::NameValue(_, syn::Lit::Str(ref lit, _)) = default_attr.value {
             let field_value = syn::parse_token_trees(lit).unwrap();
-            return quote! {
+            return (quote! {
                 #( #field_value )*
-            };
+            }, lit);
         } else {
             panic!("Attribute #[default] on fields must have a value");
         }
     }
-    quote! {
+    (quote! {
         Default::default()
-    }
+    }, "Default::default()")
 }
 
 /// Return the value that fulfills the predicate if there is one in the slice. Panic if there is
