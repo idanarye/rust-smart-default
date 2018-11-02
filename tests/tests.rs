@@ -13,9 +13,9 @@ fn test_unit() {
 fn test_tuple() {
     #[derive(PartialEq, SmartDefault)]
     struct Foo (
-        #[default = "10"]
+        #[default = 10]
         i32,
-        #[default = "20"]
+        #[default = 20]
         i32,
         // No default
         i32,
@@ -28,9 +28,9 @@ fn test_tuple() {
 fn test_struct() {
     #[derive(PartialEq, SmartDefault)]
     struct Foo {
-        #[default = "10"]
+        #[default = 10]
         x: i32,
-        #[default = "20"]
+        #[default = 20]
         y: i32,
         // No default
         z: i32,
@@ -61,7 +61,7 @@ fn test_enum_of_tuples() {
         #[allow(dead_code)]
         Bar(i32),
         #[default]
-        Baz(#[default = "10"] i32, i32),
+        Baz(#[default = 10] i32, i32),
         #[allow(dead_code)]
         Qux(i32),
     }
@@ -79,7 +79,7 @@ fn test_enum_of_structs() {
         },
         #[default]
         Baz {
-            #[default = "10"]
+            #[default = 10]
             y: i32,
             z: i32,
         },
@@ -99,7 +99,7 @@ fn test_enum_mixed() {
         #[allow(dead_code)]
         Bar,
         #[default]
-        Baz(#[default = "10"] i32),
+        Baz(#[default = 10] i32),
         #[allow(dead_code)]
         Qux {
             w: i32,
@@ -113,7 +113,7 @@ fn test_enum_mixed() {
 fn test_generics_type_parameters() {
     #[derive(PartialEq, SmartDefault)]
     struct Foo<T> where T: Default {
-        #[default = "Some(Default::default())"]
+        #[default(Some(Default::default()))]
         x: Option<T>
     }
 

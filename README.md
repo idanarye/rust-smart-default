@@ -15,14 +15,16 @@ enum Foo {
     Bar,
     #[default]
     Baz {
-        #[default = "12"]
+        #[default = 12]
         a: i32,
         b: i32,
-        #[default = r#""hello""#]
-        c: &'static str,
+        #[default(Some(Default::default()))]
+        c: Option<i32>
     },
     Qux(i32),
 }
 
-assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: "hello" });
+assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: Some(0) });
 ```
+
+Requires Rust 1.30+ (for non-string values in attributes)

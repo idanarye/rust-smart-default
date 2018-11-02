@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Require Rust 1.30+.
+- Use direct attribute value instead of having to wrap them in strings.
+
+### Added
+- `#[default(...)]` syntax in addition to `#[default = ...]`. This is required
+  to deal with some parsing limitations.
 
 ## 0.2.0 - 2017-08-21
 ### Added

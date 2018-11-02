@@ -13,5 +13,6 @@ keywords = ["default"]
 proc-macro = true
 
 [dependencies]
-syn = "0.11.11"
-quote = "0.3.15"
+syn = {version = "0.15.18", features = ["full", "derive", "extra-traits"]}
+quote = "0.6.9"
+proc-macro2 = "0.4.20"
