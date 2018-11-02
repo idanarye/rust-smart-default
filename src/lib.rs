@@ -196,7 +196,8 @@ fn is_default_attr(attr: &syn::Attribute) -> Result<bool, Error> {
         return Ok(false);
     };
 
-    if segment.arguments != syn::PathArguments::None {
+    if let syn::PathArguments::None = segment.arguments {
+    } else {
         return Ok(false);
     }
 
