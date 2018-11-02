@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Require Rust 1.30+.
 - Use direct attribute value instead of having to wrap them in strings.
+- Moved the docs from the module level to the custom derive.
 
 ### Added
 - `#[default(...)]` syntax in addition to `#[default = ...]`. This is required

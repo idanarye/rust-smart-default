@@ -9,6 +9,7 @@ matrix:
 
 # Shamelessly copied from https://www.hoverbear.org/2015/03/07/rust-travis-github-pages/#givingtravispermissions
 after_success: |
+  [[ $TRAVIS_JOB_NUMBER = *.3 ]] &&  # TODO: change to *.1 once custom derive docs get into stable
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo doc &&
