@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## 0.4.0 - 2019-02-19
+### Added
+- `#[default(_code = "...")]` syntax for defaults that cannot be parsed as
+  attributes no matter what.
+
 ## 0.3.0 - 2018-11-02
 ### Changed
 - Require Rust 1.30+.

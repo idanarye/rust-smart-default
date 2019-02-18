@@ -40,12 +40,14 @@ use quote::{quote, ToTokens};
 ///         a: i32,
 ///         b: i32,
 ///         #[default(Some(Default::default()))]
-///         c: Option<i32>
+///         c: Option<i32>,
+///         #[default(_code = "vec![1, 2, 3]")]
+///         d: Vec<u32>,
 ///     },
 ///     Qux(i32),
 /// }
 ///
-/// assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: Some(0) });
+/// assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: Some(0), d: vec![1, 2, 3] });
 /// # }
 /// ```
 ///
@@ -57,6 +59,8 @@ use quote::{quote, ToTokens};
 /// * `c` is an `Option<i32>`, and it's default is `Some(Default::default())`. Rust cannot (currently)
 ///   parse `#[default = Some(Default::default())]` and therefore we have to use a special syntax:
 ///   `#[default(Some(Default::default))]`
+/// * `d` has the `!` token in it, which cannot (currently) be parsed even with `#[default(...)]`,
+///   so we have to encode it as a string and mark it as `_code = `.
 /// * Documentation for the `impl Default` section is generated automatically, specifying the
 ///   default value returned from `::default()`.
 #[proc_macro_derive(SmartDefault, attributes(default))]
@@ -204,12 +208,29 @@ fn is_default_attr(attr: &syn::Attribute) -> Result<bool, Error> {
     Ok(segment.ident.to_string() == "default")
 }
 
+fn parse_code_hack(meta: &syn::MetaList) -> Result<Option<TokenStream>, Error> {
+    for meta in meta.nested.iter() {
+        if let syn::NestedMeta::Meta(syn::Meta::NameValue(meta)) = meta {
+            if meta.ident != "_code" {
+                continue;
+            }
+            if let syn::Lit::Str(lit) = &meta.lit {
+                use std::str::FromStr;
+                return Ok(Some(TokenStream::from_str(&lit.value())?));
+            }
+        };
+    }
+    Ok(None)
+}
+
 fn find_default_attr_value(attrs: &[syn::Attribute]) -> Result<Option<Option<TokenStream>>, Error> {
     if let Some(default_attr) = find_only(attrs.iter(), |attr| is_default_attr(attr))? {
         match default_attr.parse_meta() {
             Ok(syn::Meta::Word(_)) => Ok(Some(None)),
             Ok(syn::Meta::List(meta)) => {
-                if let Some(field_value) = single_value(meta.nested.iter()) {
+                if let Some (field_value) = parse_code_hack(&meta)? { // #[default(_code = "...")]
+                    Ok(Some(Some(field_value.into_token_stream())))
+                } else if let Some(field_value) = single_value(meta.nested.iter()) { // #[default(...)]
                     Ok(Some(Some(field_value.into_token_stream())))
                 } else {
                     return Err(Error::new(

@@ -1,7 +1,7 @@
 [package]
 name = "smart-default"
 description = "Rust custom-derive macro for Default with more control on the fields"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["IdanArye <idanarye@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/idanarye/rust-smart-default"
@@ -13,6 +13,6 @@ keywords = ["default"]
 proc-macro = true
 
 [dependencies]
-syn = {version = "0.15.18", features = ["derive"]}
+syn = {version = "0.15.26", features = ["full"]}
 quote = "0.6.9"
 proc-macro2 = "0.4.20"

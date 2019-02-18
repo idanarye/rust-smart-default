@@ -136,3 +136,14 @@ fn test_generics_lifetime_parameters() {
 
     assert!(Foo::default() == Foo::Bar(0));
 }
+
+#[test]
+fn test_code_hack() {
+    #[derive(PartialEq, SmartDefault)]
+    struct Foo {
+        #[default(_code = "vec![1, 2, 3]")]
+        v: Vec<u32>,
+    }
+
+    assert!(Foo::default().v == [1, 2, 3]);
+}
