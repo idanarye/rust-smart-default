@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## 0.5.0 - 2019-03-01
+### Changed
+- When the default is a string literal, strap an `.into()` after it to
+  automatically convert it to `String` when needed.
+
 ## 0.4.0 - 2019-02-19
 ### Added
 - `#[default(_code = "...")]` syntax for defaults that cannot be parsed as
