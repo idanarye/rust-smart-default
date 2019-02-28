@@ -5,38 +5,54 @@ use quote::ToTokens;
 
 use util::{find_only, single_value};
 
-pub fn find_default_attr_value(attrs: &[syn::Attribute]) -> Result<Option<Option<TokenStream>>, Error> {
-    if let Some(default_attr) = find_only(attrs.iter(), |attr| is_default_attr(attr))? {
-        match default_attr.parse_meta() {
-            Ok(syn::Meta::Word(_)) => Ok(Some(None)),
-            Ok(syn::Meta::List(meta)) => {
-                if let Some (field_value) = parse_code_hack(&meta)? { // #[default(_code = "...")]
-                    Ok(Some(Some(field_value.into_token_stream())))
-                } else if let Some(field_value) = single_value(meta.nested.iter()) { // #[default(...)]
-                    Ok(Some(Some(field_value.into_token_stream())))
-                } else {
-                    return Err(Error::new(
-                            if meta.nested.is_empty() {
-                                meta.span()
-                            } else {
-                                meta.nested.span()
-                            },
-                            "Expected signle value in #[default(...)]"));
+pub struct DefaultAttr {
+    pub code: Option<TokenStream>,
+}
+
+impl DefaultAttr {
+    pub fn find_in_attributes(attrs: &[syn::Attribute]) -> Result<Option<Self>, Error> {
+        if let Some(default_attr) = find_only(attrs.iter(), |attr| is_default_attr(attr))? {
+            match default_attr.parse_meta() {
+                Ok(syn::Meta::Word(_)) => Ok(Some(Self {
+                    code: None,
+                })),
+                Ok(syn::Meta::List(meta)) => {
+                    if let Some (field_value) = parse_code_hack(&meta)? { // #[default(_code = "...")]
+                        Ok(Some(Self {
+                            code: Some(field_value.into_token_stream()),
+                        }))
+                    } else if let Some(field_value) = single_value(meta.nested.iter()) { // #[default(...)]
+                        Ok(Some(Self {
+                            code: Some(field_value.into_token_stream()),
+                        }))
+                    } else {
+                        return Err(Error::new(
+                                if meta.nested.is_empty() {
+                                    meta.span()
+                                } else {
+                                    meta.nested.span()
+                                },
+                                "Expected signle value in #[default(...)]"));
+                    }
+                }
+                Ok(syn::Meta::NameValue(meta)) => {
+                    Ok(Some(Self {
+                        code: Some(meta.lit.into_token_stream()),
+                    }))
+                }
+                Err(error) => {
+                    if let syn::Expr::Paren(as_parens) = syn::parse(default_attr.tts.clone().into())? {
+                        Ok(Some(Self {
+                            code: Some(as_parens.expr.into_token_stream()),
+                        }))
+                    } else {
+                        Err(error)
+                    }
                 }
             }
-            Ok(syn::Meta::NameValue(meta)) => {
-                Ok(Some(Some(meta.lit.into_token_stream())))
-            }
-            Err(error) => {
-                if let syn::Expr::Paren(as_parens) = syn::parse(default_attr.tts.clone().into())? {
-                    Ok(Some(Some(as_parens.expr.into_token_stream())))
-                } else {
-                    Err(error)
-                }
-            }
+        } else {
+            Ok(None)
         }
-    } else {
-        Ok(None)
     }
 }
 

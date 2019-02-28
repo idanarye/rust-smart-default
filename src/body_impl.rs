@@ -5,7 +5,7 @@ use syn::spanned::Spanned;
 use syn::parse::Error;
 use quote::quote;
 
-use default_attr::find_default_attr_value;
+use default_attr::DefaultAttr;
 use util::find_only;
 
 pub fn impl_my_derive(input: &DeriveInput) -> Result<TokenStream, Error> {
@@ -21,11 +21,11 @@ pub fn impl_my_derive(input: &DeriveInput) -> Result<TokenStream, Error> {
         }
         syn::Data::Enum(ref body) => {
             let default_variant = find_only(body.variants.iter(), |variant| {
-                if let Some(meta) = find_default_attr_value(&variant.attrs)? {
-                    if meta.is_none() {
+                if let Some(meta) = DefaultAttr::find_in_attributes(&variant.attrs)? {
+                    if meta.code.is_none() {
                         Ok(true)
                     } else {
-                        Err(Error::new(meta.span(), "Attribute #[default] on variants should have no value"))
+                        Err(Error::new(meta.code.span(), "Attribute #[default] on variants should have no value"))
                     }
                 } else {
                     Ok(false)
@@ -109,8 +109,8 @@ fn default_body_tt(body: &syn::Fields) -> Result<(TokenStream, String), Error> {
 /// Return a default expression for a field based on it's `#[default = "..."]` attribute. Panic
 /// if there is more than one, of if there is a `#[default]` attribute without value.
 fn field_default_expr_and_doc(field: &syn::Field) -> Result<(TokenStream, String), Error> {
-    if let Some(field_value) = find_default_attr_value(&field.attrs)? {
-        let field_value = field_value.ok_or_else(|| {
+    if let Some(field_value) = DefaultAttr::find_in_attributes(&field.attrs)? {
+        let field_value = field_value.code.ok_or_else(|| {
             Error::new(field.span(), "Expected #[default = ...] or #[default(...)]")})?;
         let field_doc = format!("{}", field_value);
         Ok((field_value, field_doc))
