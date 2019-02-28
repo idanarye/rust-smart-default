@@ -147,3 +147,16 @@ fn test_code_hack() {
 
     assert!(Foo::default().v == [1, 2, 3]);
 }
+
+#[test]
+fn test_string_conversion() {
+    #[derive(PartialEq, SmartDefault)]
+    struct Foo(
+        #[default = "one"]
+        &'static str,
+        #[default("two")]
+        String,
+    );
+
+    assert!(Foo::default() == Foo("one", "two".to_owned()));
+}

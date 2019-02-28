@@ -39,11 +39,19 @@ mod util;
 ///         c: Option<i32>,
 ///         #[default(_code = "vec![1, 2, 3]")]
 ///         d: Vec<u32>,
+///         #[default = "four"]
+///         e: String,
 ///     },
 ///     Qux(i32),
 /// }
 ///
-/// assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: Some(0), d: vec![1, 2, 3] });
+/// assert!(Foo::default() == Foo::Baz {
+///     a: 12,
+///     b: 0,
+///     c: Some(0),
+///     d: vec![1, 2, 3],
+///     e: "four".to_owned(),
+/// });
 /// # }
 /// ```
 ///
@@ -57,6 +65,9 @@ mod util;
 ///   `#[default(Some(Default::default))]`
 /// * `d` has the `!` token in it, which cannot (currently) be parsed even with `#[default(...)]`,
 ///   so we have to encode it as a string and mark it as `_code = `.
+/// * `e` is a `String`, so the string literal "four" is automatically converted to it. This
+///   automatic conversion **only** happens to string (or byte string) literals - and only if
+///   `_code` is not used.
 /// * Documentation for the `impl Default` section is generated automatically, specifying the
 ///   default value returned from `::default()`.
 #[proc_macro_derive(SmartDefault, attributes(default))]

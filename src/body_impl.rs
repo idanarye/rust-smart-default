@@ -5,7 +5,7 @@ use syn::spanned::Spanned;
 use syn::parse::Error;
 use quote::quote;
 
-use default_attr::DefaultAttr;
+use default_attr::{DefaultAttr, ConversionStrategy};
 use util::find_only;
 
 pub fn impl_my_derive(input: &DeriveInput) -> Result<TokenStream, Error> {
@@ -109,9 +109,16 @@ fn default_body_tt(body: &syn::Fields) -> Result<(TokenStream, String), Error> {
 /// Return a default expression for a field based on it's `#[default = "..."]` attribute. Panic
 /// if there is more than one, of if there is a `#[default]` attribute without value.
 fn field_default_expr_and_doc(field: &syn::Field) -> Result<(TokenStream, String), Error> {
-    if let Some(field_value) = DefaultAttr::find_in_attributes(&field.attrs)? {
-        let field_value = field_value.code.ok_or_else(|| {
+    if let Some(default_attr) = DefaultAttr::find_in_attributes(&field.attrs)? {
+        let conversion_strategy = default_attr.conversion_strategy();
+        let field_value = default_attr.code.ok_or_else(|| {
             Error::new(field.span(), "Expected #[default = ...] or #[default(...)]")})?;
+
+        let field_value = match conversion_strategy {
+            ConversionStrategy::NoConversion => field_value,
+            ConversionStrategy::Into => quote!((#field_value).into()),
+        };
+
         let field_doc = format!("{}", field_value);
         Ok((field_value, field_doc))
     } else {

@@ -22,11 +22,19 @@ enum Foo {
         c: Option<i32>,
         #[default(_code = "vec![1, 2, 3]")]
         d: Vec<u32>,
+        #[default = "four"]
+        e: String,
     },
     Qux(i32),
 }
 
-assert!(Foo::default() == Foo::Baz { a: 12, b: 0, c: Some(0), d: vec![1, 2, 3] });
+assert!(Foo::default() == Foo::Baz {
+    a: 12,
+    b: 0,
+    c: Some(0),
+    d: vec![1, 2, 3],
+    e: "four".to_owned(),
+});
 ```
 
 Requires Rust 1.30+ (for non-string values in attributes)

@@ -5,8 +5,15 @@ use quote::ToTokens;
 
 use util::{find_only, single_value};
 
+#[derive(Debug, Clone, Copy)]
+pub enum ConversionStrategy {
+    NoConversion,
+    Into,
+}
+
 pub struct DefaultAttr {
     pub code: Option<TokenStream>,
+    conversion_strategy: Option<ConversionStrategy>,
 }
 
 impl DefaultAttr {
@@ -15,15 +22,18 @@ impl DefaultAttr {
             match default_attr.parse_meta() {
                 Ok(syn::Meta::Word(_)) => Ok(Some(Self {
                     code: None,
+                    conversion_strategy: None,
                 })),
                 Ok(syn::Meta::List(meta)) => {
-                    if let Some (field_value) = parse_code_hack(&meta)? { // #[default(_code = "...")]
+                    if let Some(field_value) = parse_code_hack(&meta)? { // #[default(_code = "...")]
                         Ok(Some(Self {
                             code: Some(field_value.into_token_stream()),
+                            conversion_strategy: Some(ConversionStrategy::NoConversion),
                         }))
                     } else if let Some(field_value) = single_value(meta.nested.iter()) { // #[default(...)]
                         Ok(Some(Self {
                             code: Some(field_value.into_token_stream()),
+                            conversion_strategy: None,
                         }))
                     } else {
                         return Err(Error::new(
@@ -38,12 +48,14 @@ impl DefaultAttr {
                 Ok(syn::Meta::NameValue(meta)) => {
                     Ok(Some(Self {
                         code: Some(meta.lit.into_token_stream()),
+                        conversion_strategy: None,
                     }))
                 }
                 Err(error) => {
                     if let syn::Expr::Paren(as_parens) = syn::parse(default_attr.tts.clone().into())? {
                         Ok(Some(Self {
                             code: Some(as_parens.expr.into_token_stream()),
+                            conversion_strategy: None,
                         }))
                     } else {
                         Err(error)
@@ -53,6 +65,25 @@ impl DefaultAttr {
         } else {
             Ok(None)
         }
+    }
+
+    pub fn conversion_strategy(&self) -> ConversionStrategy {
+        if let Some(conversion_strategy) = self.conversion_strategy {
+            // Conversion strategy already set
+            return conversion_strategy;
+        }
+        let code = if let Some(code) = &self.code {
+            code
+        } else {
+            // #[default] - so no conversion (`Default::default()` already has the correct type)
+            return ConversionStrategy::NoConversion;
+        };
+        if let Ok(syn::Lit::Str(_)) | Ok(syn::Lit::ByteStr(_)) = syn::parse::<syn::Lit>(code.clone().into()) {
+            // A string literal - so we need a conversion in case we need to make it a `String`
+            return ConversionStrategy::Into;
+        }
+        // Not handled by one of the rules, so we don't convert it to avoid causing trouble
+        ConversionStrategy::NoConversion
     }
 }
 
