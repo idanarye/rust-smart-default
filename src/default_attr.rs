@@ -78,9 +78,12 @@ impl DefaultAttr {
             // #[default] - so no conversion (`Default::default()` already has the correct type)
             return ConversionStrategy::NoConversion;
         };
-        if let Ok(syn::Lit::Str(_)) | Ok(syn::Lit::ByteStr(_)) = syn::parse::<syn::Lit>(code.clone().into()) {
-            // A string literal - so we need a conversion in case we need to make it a `String`
-            return ConversionStrategy::Into;
+        match syn::parse::<syn::Lit>(code.clone().into()) {
+            Ok(syn::Lit::Str(_)) | Ok(syn::Lit::ByteStr(_))=> {
+                // A string literal - so we need a conversion in case we need to make it a `String`
+                return ConversionStrategy::Into;
+            },
+            _ => {},
         }
         // Not handled by one of the rules, so we don't convert it to avoid causing trouble
         ConversionStrategy::NoConversion

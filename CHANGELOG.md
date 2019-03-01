@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## 0.5.1 - 2019-03-01
+### Fixed
+- Don't use a multi-pattern `if let`, as this unnecessarily requires version
+  1.33.0 of Rust.
+
 ## 0.5.0 - 2019-03-01
 ### Changed
 - When the default is a string literal, strap an `.into()` after it to
