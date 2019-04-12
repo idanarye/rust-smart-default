@@ -124,7 +124,7 @@ fn field_default_expr_and_doc(field: &syn::Field) -> Result<(TokenStream, String
     } else {
         let field_type = field.ty.clone().into_token_stream();
         Ok((quote! {
-            <#field_type as core::default::Default>::default()
+            <#field_type as Default>::default()
         }, "Default::default()".to_owned()))
     }
 }
