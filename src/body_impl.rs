@@ -42,6 +42,7 @@ pub fn impl_my_derive(input: &DeriveInput) -> Result<TokenStream, Error> {
         }
     };
     Ok(quote! {
+        #[automatically_derived]
         impl #impl_generics Default for #name #ty_generics #where_clause {
             #[doc = #doc]
             fn default() -> Self {
