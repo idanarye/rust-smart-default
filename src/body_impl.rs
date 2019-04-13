@@ -3,7 +3,7 @@ use proc_macro2::TokenStream;
 use syn::DeriveInput;
 use syn::spanned::Spanned;
 use syn::parse::Error;
-use quote::{quote, ToTokens as _};
+use quote::quote;
 
 use default_attr::{DefaultAttr, ConversionStrategy};
 use util::find_only;
@@ -122,9 +122,8 @@ fn field_default_expr_and_doc(field: &syn::Field) -> Result<(TokenStream, String
         let field_doc = format!("{}", field_value);
         Ok((field_value, field_doc))
     } else {
-        let field_type = field.ty.clone().into_token_stream();
         Ok((quote! {
-            <#field_type as Default>::default()
+            Default::default()
         }, "Default::default()".to_owned()))
     }
 }
