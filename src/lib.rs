@@ -12,7 +12,7 @@ mod util;
 
 /// # Smart Default
 ///
-/// This crate provides a custom derive for `SmartDefault`. `SmartDefault` is not a real type -
+/// This crate provides a custom derive for `SmartDefault`. `SmartDefault` is not a real trait -
 /// deriving it will actually `impl Default`. The difference from regular `#[derive(Default)]` is
 /// that `#[derive(SmartDefault)]` allows you to use `#[default = "..."]` attributes to customize
 /// the `::default()` method and to support `struct`s that don't have `Default` for all their
