@@ -58,7 +58,7 @@ fn default_body_tt(body: &syn::Fields) -> Result<(TokenStream, String), Error> {
     let mut doc = String::new();
     use std::fmt::Write;
     let body_tt = match body {
-        &syn::Fields::Named(ref fields) => {
+        syn::Fields::Named(ref fields) => {
             doc.push_str(" {");
             let result = {
                 let field_assignments = fields.named.iter().map(|field| {
@@ -74,14 +74,14 @@ fn default_body_tt(body: &syn::Fields) -> Result<(TokenStream, String), Error> {
                     }
                 }
             };
-            if (&mut doc).ends_with(",") {
+            if doc.ends_with(',') {
                 doc.pop();
                 doc.push('\n');
             };
             doc.push('}');
             result
         }
-        &syn::Fields::Unnamed(ref fields) => {
+        syn::Fields::Unnamed(ref fields) => {
             doc.push('(');
             let result = {
                 let field_assignments = fields.unnamed.iter().map(|field| {
@@ -95,7 +95,7 @@ fn default_body_tt(body: &syn::Fields) -> Result<(TokenStream, String), Error> {
                     )
                 }
             };
-            if (&mut doc).ends_with(", ") {
+            if doc.ends_with(", ") {
                 doc.pop();
                 doc.pop();
             };

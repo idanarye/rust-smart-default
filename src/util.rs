@@ -18,12 +18,3 @@ where T: Spanned,
     }
     Ok(result)
 }
-
-pub fn single_value<T>(mut it: impl Iterator<Item = T>) -> Option<T> {
-    if let Some(result) = it.next() {
-        if it.next().is_none() {
-            return Some(result)
-        }
-    }
-    None
-}

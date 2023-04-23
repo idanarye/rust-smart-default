@@ -13,6 +13,6 @@ keywords = ["default"]
 proc-macro = true
 
 [dependencies]
-syn = {version = "1", features = ["full"]}
+syn = "2"
 quote = "1"
 proc-macro2 = "1"
