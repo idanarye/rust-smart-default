@@ -22,11 +22,14 @@ enum Foo {
 }
 
 fn main() {
-    assert!(Foo::default() == Foo::Baz {
-        a: 12,
-        b: 0,
-        c: Some(0),
-        d: vec![1, 2, 3],
-        e: "four".to_owned(),
-    });
+    assert!(
+        Foo::default()
+            == Foo::Baz {
+                a: 12,
+                b: 0,
+                c: Some(0),
+                d: vec![1, 2, 3],
+                e: "four".to_owned(),
+            }
+    );
 }

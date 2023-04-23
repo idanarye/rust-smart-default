@@ -74,11 +74,7 @@ mod util;
 pub fn derive_smart_default(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match body_impl::impl_my_derive(&input) {
-        Ok(output) => {
-            output.into()
-        },
-        Err(error) =>{
-            error.to_compile_error().into()
-        }
+        Ok(output) => output.into(),
+        Err(error) => error.to_compile_error().into(),
     }
 }
