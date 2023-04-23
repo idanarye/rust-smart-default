@@ -125,10 +125,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           cargo doc --verbose &&
-          echo "<meta http-equiv=refresh content=0;url=smart_default/index.html>" > target/doc/index.html &&
-          pip install ghp-import --user && export PATH=$HOME/.local/bin:$PATH &&
-          ghp-import -n target/doc &&
-          git push -fq https://${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git gh-pages
+          echo "<meta http-equiv=refresh content=0;url=smart_default/index.html>" > target/doc/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
