@@ -1,7 +1,7 @@
 [package]
 name = "smart-default"
 description = "Rust custom-derive macro for Default with more control on the fields"
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 authors = ["IdanArye <idanarye@gmail.com>"]
 license = "MIT"
