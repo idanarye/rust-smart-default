@@ -1,17 +1,16 @@
-#[macro_use]
-extern crate smart_default;
+use smart_default::SmartDefault;
 
 #[test]
 fn test_unit() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo;
 
-    assert!(Foo::default() == Foo);
+    assert_eq!(Foo::default(), Foo);
 }
 
 #[test]
 fn test_tuple() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo(
         #[default = 10] i32,
         #[default = 20] i32,
@@ -19,12 +18,12 @@ fn test_tuple() {
         i32,
     );
 
-    assert!(Foo::default() == Foo(10, 20, 0));
+    assert_eq!(Foo::default(), Foo(10, 20, 0));
 }
 
 #[test]
 fn test_struct() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo {
         #[default = 10]
         x: i32,
@@ -34,12 +33,12 @@ fn test_struct() {
         z: i32,
     }
 
-    assert!(Foo::default() == Foo { x: 10, y: 20, z: 0 });
+    assert_eq!(Foo::default(), Foo { x: 10, y: 20, z: 0 });
 }
 
 #[test]
 fn test_enum_of_units() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     pub enum Foo {
         #[allow(dead_code)]
         Bar,
@@ -49,12 +48,12 @@ fn test_enum_of_units() {
         Qux,
     }
 
-    assert!(Foo::default() == Foo::Baz);
+    assert_eq!(Foo::default(), Foo::Baz);
 }
 
 #[test]
 fn test_enum_of_tuples() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     pub enum Foo {
         #[allow(dead_code)]
         Bar(i32),
@@ -64,12 +63,12 @@ fn test_enum_of_tuples() {
         Qux(i32),
     }
 
-    assert!(Foo::default() == Foo::Baz(10, 0));
+    assert_eq!(Foo::default(), Foo::Baz(10, 0));
 }
 
 #[test]
 fn test_enum_of_structs() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     pub enum Foo {
         #[allow(dead_code)]
         Bar { x: i32 },
@@ -83,12 +82,12 @@ fn test_enum_of_structs() {
         Qux { w: i32 },
     }
 
-    assert!(Foo::default() == Foo::Baz { y: 10, z: 0 });
+    assert_eq!(Foo::default(), Foo::Baz { y: 10, z: 0 });
 }
 
 #[test]
 fn test_enum_mixed() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     enum Foo {
         #[allow(dead_code)]
         Bar,
@@ -98,12 +97,12 @@ fn test_enum_mixed() {
         Qux { w: i32 },
     }
 
-    assert!(Foo::default() == Foo::Baz(10));
+    assert_eq!(Foo::default(), Foo::Baz(10));
 }
 
 #[test]
 fn test_generics_type_parameters() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo<T>
     where
         T: Default,
@@ -112,7 +111,7 @@ fn test_generics_type_parameters() {
         x: Option<T>,
     }
 
-    assert!(Foo::default() == Foo { x: Some(0) });
+    assert_eq!(Foo::default(), Foo { x: Some(0) });
 }
 
 #[test]
@@ -121,7 +120,7 @@ fn test_generics_lifetime_parameters() {
     // paramters and therefore can receive no lifetimes. But it does make sense if you make a variant
     // without ref fields the default.
 
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     enum Foo<'a> {
         #[default]
         Bar(i32),
@@ -129,12 +128,12 @@ fn test_generics_lifetime_parameters() {
         Baz(&'a str),
     }
 
-    assert!(Foo::default() == Foo::Bar(0));
+    assert_eq!(Foo::default(), Foo::Bar(0));
 }
 
 #[test]
 fn test_code_hack() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo {
         #[default(_code = "vec![1, 2, 3]")]
         v: Vec<u32>,
@@ -145,8 +144,46 @@ fn test_code_hack() {
 
 #[test]
 fn test_string_conversion() {
-    #[derive(PartialEq, SmartDefault)]
+    #[derive(Debug, PartialEq, SmartDefault)]
     struct Foo(#[default = "one"] &'static str, #[default("two")] String);
 
-    assert!(Foo::default() == Foo("one", "two".to_owned()));
+    assert_eq!(Foo::default(), Foo("one", "two".to_owned()));
+}
+
+#[test] // https://github.com/idanarye/rust-smart-default/issues/13
+fn test_issue_13_bool() {
+    #[derive(Debug, PartialEq, SmartDefault)]
+    struct Foo {
+        #[default(1)]
+        i: i32,
+        #[default(true)]
+        b: bool,
+    }
+
+    assert_eq!(Foo::default(), Foo { i: 1, b: true });
+}
+
+#[test] // https://github.com/idanarye/rust-smart-default/issues/13
+fn test_issue_13_enum() {
+    #[derive(Debug, PartialEq)]
+    enum Either {
+        #[allow(dead_code)]
+        Left,
+        Right,
+    }
+    #[derive(Debug, PartialEq, SmartDefault)]
+    struct Foo {
+        #[default(1)]
+        i: i32,
+        #[default(Either::Right)]
+        b: Either,
+    }
+
+    assert_eq!(
+        Foo::default(),
+        Foo {
+            i: 1,
+            b: Either::Right
+        }
+    );
 }

@@ -1,14 +1,13 @@
 use proc_macro2::TokenStream;
-
 use quote::quote;
-use syn::parse::Error;
-use syn::spanned::Spanned;
-use syn::DeriveInput;
+use syn::{parse::Error, spanned::Spanned as _};
 
-use default_attr::{ConversionStrategy, DefaultAttr};
-use util::find_only;
+use crate::{
+    default_attr::{ConversionStrategy, DefaultAttr},
+    util::find_only,
+};
 
-pub fn impl_my_derive(input: &DeriveInput) -> Result<TokenStream, Error> {
+pub fn impl_my_derive(input: &syn::DeriveInput) -> Result<TokenStream, Error> {
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 

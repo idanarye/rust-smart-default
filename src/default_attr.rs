@@ -1,10 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::meta::ParseNestedMeta;
-use syn::LitStr;
 use syn::{parse::Error, MetaNameValue};
 
-use util::find_only;
+use crate::util::find_only;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ConversionStrategy {
@@ -23,38 +21,32 @@ impl DefaultAttr {
             find_only(attrs.iter(), |attr| Ok(attr.path().is_ident("default")))?
         {
             match &default_attr.meta {
+                // #[default]
                 syn::Meta::Path(_) => Ok(Some(Self {
                     code: None,
                     conversion_strategy: None,
                 })),
                 syn::Meta::List(meta) => {
-                    let mut code = None;
-                    // If the meta contains exactly (_code = "...") take the string literal as the
-                    // expression
-                    // meta.parse_nested_meta(|meta| parse_code_hack(meta, &mut code))
-                    //     .unwrap();
-                    if meta
-                        .parse_nested_meta(|meta| parse_code_hack(meta, &mut code))
-                        .is_ok()
-                    {
-                        if let Some(code) = code {
-                            Ok(Some(Self {
-                                code: Some(code),
-                                conversion_strategy: Some(ConversionStrategy::NoConversion),
-                            }))
-                        } else {
-                            Err(Error::new_spanned(
-                                meta,
-                                "Expected single value in #[default(...)]",
-                            ))
-                        }
-                    } else {
+                    // #[default(_code = "<expr>")]
+                    if let Some(field_value) = parse_code_hack(&meta)? {
                         Ok(Some(Self {
-                            code: Some(meta.tokens.clone()),
+                            code: Some(field_value.into_token_stream()),
+                            conversion_strategy: Some(ConversionStrategy::NoConversion),
+                        }))
+                    // #[default(<expr>)]
+                    } else if let Ok(field_value) = syn::parse2::<syn::Expr>(meta.tokens.clone()) {
+                        Ok(Some(Self {
+                            code: Some(field_value.into_token_stream()),
                             conversion_strategy: None,
                         }))
+                    } else {
+                        Err(Error::new_spanned(
+                            meta,
+                            "Expected single value in #[default(...)]",
+                        ))
                     }
                 }
+                // #[default = <expr>]
                 syn::Meta::NameValue(MetaNameValue { value, .. }) => Ok(Some(Self {
                     code: Some(value.into_token_stream()),
                     conversion_strategy: None,
@@ -88,11 +80,20 @@ impl DefaultAttr {
     }
 }
 
-fn parse_code_hack(meta: ParseNestedMeta, code: &mut Option<TokenStream>) -> Result<(), Error> {
-    // panic!("{:?}", (meta.path, meta.input));
-    if meta.path.is_ident("_code") {
-        let str: LitStr = meta.value()?.parse()?;
-        *code = Some(str.parse()?)
+fn parse_code_hack(meta: &syn::MetaList) -> Result<Option<TokenStream>, Error> {
+    if let Ok(inner) = syn::parse2::<MetaNameValue>(meta.tokens.clone()) {
+        if inner.path.is_ident("_code") {
+            if let syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Str(lit),
+                ..
+            }) = &inner.value
+            {
+                use std::str::FromStr;
+                return Ok(Some(TokenStream::from_str(&lit.value())?));
+            } else {
+                return Ok(Some(inner.value.to_token_stream()));
+            }
+        }
     }
-    Ok(())
+    Ok(None)
 }

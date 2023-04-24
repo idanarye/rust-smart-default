@@ -1,5 +1,3 @@
-extern crate smart_default;
-
 use smart_default::SmartDefault;
 
 #[derive(PartialEq, SmartDefault, Debug)]

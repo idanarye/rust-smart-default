@@ -1,5 +1,4 @@
-use syn::parse::Error;
-use syn::spanned::Spanned;
+use syn::{parse::Error, spanned::Spanned};
 
 /// Return the value that fulfills the predicate if there is one in the slice. Panic if there is
 /// more than one.
