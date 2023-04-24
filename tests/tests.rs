@@ -150,3 +150,14 @@ fn test_string_conversion() {
 
     assert!(Foo::default() == Foo("one", "two".to_owned()));
 }
+
+#[test]
+fn negative_number_assignment() {
+    #[derive(PartialEq, SmartDefault)]
+    struct Foo(
+        #[default = -1]
+         i16,
+    );
+
+    assert!(Foo::default() == Foo(-1));
+}
