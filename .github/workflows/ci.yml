@@ -28,12 +28,11 @@ jobs:
         rust: [1.69.0, nightly]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
       - name: Ready cache
         if: matrix.os == 'ubuntu-latest'
         run: sudo chown -R $(whoami):$(id -ng) ~/.cargo/
@@ -44,37 +43,27 @@ jobs:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Test smart-default
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-targets
+        run: cargo test --all-targets
   fmt:
    name: Rustfmt
    runs-on: ubuntu-latest
    steps:
-     - uses: actions/checkout@v2
-     - uses: actions-rs/toolchain@v1
+     - uses: actions/checkout@v3
+     - uses: dtolnay/rust-toolchain@master
        with:
-         profile: minimal
          toolchain: nightly
-         override: true
          components: rustfmt
      - name: Run fmt --all -- --check
-       uses: actions-rs/cargo@v1
-       with:
-         command: fmt
-         args: --all -- --check
+       run: cargo fmt --all -- --check
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: nightly
-          override: true
           components: clippy
       - name: Cache cargo
         uses: actions/cache@v1
@@ -91,12 +80,10 @@ jobs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: nightly
-          override: true
       - name: Cache cargo
         uses: actions/cache@v1
         id: cache
@@ -104,21 +91,15 @@ jobs:
           path: ~/.cargo
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Run doc tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --doc
+        run: cargo test --doc
       - name: Check smart-default docs
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --no-deps
+        run: cargo doc --no-deps
   docs-ghpages:
     name: Update Docs in GitHub Pages
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Build docs
         env:
           GITHUB_REPO: ${{ github.repository }}
