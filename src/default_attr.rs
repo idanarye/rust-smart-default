@@ -4,7 +4,7 @@ use syn::meta::ParseNestedMeta;
 use syn::LitStr;
 use syn::{parse::Error, MetaNameValue};
 
-use util::find_only;
+use crate::util::find_only;
 
 #[derive(Debug, Clone, Copy)]
 pub enum ConversionStrategy {

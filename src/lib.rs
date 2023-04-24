@@ -1,9 +1,3 @@
-extern crate proc_macro;
-extern crate proc_macro2;
-extern crate syn;
-
-extern crate quote;
-
 use syn::{parse_macro_input, DeriveInput};
 
 mod body_impl;
@@ -21,8 +15,7 @@ mod util;
 /// # Examples
 ///
 /// ```
-/// #[macro_use]
-/// extern crate smart_default;
+/// use smart_default::SmartDefault;
 ///
 /// # fn main() {
 /// #[derive(SmartDefault)]

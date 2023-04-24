@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate smart_default;
+use smart_default::SmartDefault;
 
 #[test]
 fn test_unit() {
