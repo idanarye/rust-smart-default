@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed
+- Fixed bug where the macro fails on valid default expression that is also a
+  valid attribute meta because it was expecting the `_code` hack.
 
 ## 0.7.0 - 2023-04-23
 ### Changed

@@ -149,3 +149,22 @@ fn test_string_conversion() {
 
     assert!(Foo::default() == Foo("one", "two".to_owned()));
 }
+
+#[test]
+fn test_non_code_hack_valid_meta() {
+    #[derive(Debug, PartialEq, SmartDefault)]
+    struct Foo {
+        #[default(true)]
+        bar: bool,
+        #[default(Option::None)]
+        baz: Option<()>,
+    }
+
+    assert_eq!(
+        Foo::default(),
+        Foo {
+            bar: true,
+            baz: None
+        }
+    );
+}

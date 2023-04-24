@@ -1,7 +1,5 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::meta::ParseNestedMeta;
-use syn::LitStr;
 use syn::{parse::Error, MetaNameValue};
 
 use crate::util::find_only;
@@ -28,26 +26,13 @@ impl DefaultAttr {
                     conversion_strategy: None,
                 })),
                 syn::Meta::List(meta) => {
-                    let mut code = None;
                     // If the meta contains exactly (_code = "...") take the string literal as the
                     // expression
-                    // meta.parse_nested_meta(|meta| parse_code_hack(meta, &mut code))
-                    //     .unwrap();
-                    if meta
-                        .parse_nested_meta(|meta| parse_code_hack(meta, &mut code))
-                        .is_ok()
-                    {
-                        if let Some(code) = code {
-                            Ok(Some(Self {
-                                code: Some(code),
-                                conversion_strategy: Some(ConversionStrategy::NoConversion),
-                            }))
-                        } else {
-                            Err(Error::new_spanned(
-                                meta,
-                                "Expected single value in #[default(...)]",
-                            ))
-                        }
+                    if let Ok(ParseCodeHack(code_hack)) = syn::parse(meta.tokens.clone().into()) {
+                        Ok(Some(Self {
+                            code: Some(code_hack),
+                            conversion_strategy: Some(ConversionStrategy::NoConversion),
+                        }))
                     } else {
                         Ok(Some(Self {
                             code: Some(meta.tokens.clone()),
@@ -88,11 +73,17 @@ impl DefaultAttr {
     }
 }
 
-fn parse_code_hack(meta: ParseNestedMeta, code: &mut Option<TokenStream>) -> Result<(), Error> {
-    // panic!("{:?}", (meta.path, meta.input));
-    if meta.path.is_ident("_code") {
-        let str: LitStr = meta.value()?.parse()?;
-        *code = Some(str.parse()?)
+struct ParseCodeHack(TokenStream);
+
+impl syn::parse::Parse for ParseCodeHack {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident: syn::Ident = input.parse()?;
+        if ident != "_code" {
+            return Err(Error::new(ident.span(), "Expected `_code`"));
+        }
+        input.parse::<syn::token::Eq>()?;
+        let code: syn::LitStr = input.parse()?;
+        let code: TokenStream = code.parse()?;
+        Ok(ParseCodeHack(code))
     }
-    Ok(())
 }
