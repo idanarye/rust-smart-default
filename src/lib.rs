@@ -15,8 +15,7 @@ use syn::{parse_macro_input, DeriveInput};
 /// # Examples
 ///
 /// ```rust
-/// #[macro_use]
-/// extern crate smart_default;
+/// use smart_default::SmartDefault;
 ///
 /// # fn main() {
 /// #[derive(SmartDefault)]
