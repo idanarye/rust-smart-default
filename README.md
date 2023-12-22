@@ -36,4 +36,5 @@ assert!(Foo::default() == Foo::Baz {
 });
 ```
 
-Requires Rust 1.30+ (for non-string values in attributes)
+Requires Rust 1.30+ (for non-string values in attributes), and version 1.56
+due to 2021 edition.
